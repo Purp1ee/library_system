@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Author } from './author.entity';
 
 @Entity()
@@ -9,15 +9,13 @@ export class Book {
   @Column()
   title: string;
 
-  @Column('int')
-  yearPublished: number;
+  @Column()
+  isbn: string;
 
-  @Column('int')
-  numberCopies: number;
+  @Column()
+  publicationYear: number;
 
   @ManyToOne(() => Author, (author) => author.books)
+  @JoinColumn({ name: 'authorId' })
   author: Author;
-
-  @Column('date')
-  dateReleaseBooks: Date;
 }

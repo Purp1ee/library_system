@@ -7,10 +7,10 @@ export class Author {
   id: number;
 
   @Column()
-  fullName: string;
+  name: string;
 
-  @Column('date')
-  dateBirth: Date;
+  @Column({ type: 'date', nullable: true })
+  birthDate?: Date;
 
   @OneToMany(() => Book, (book) => book.author)
   books: Book[];
