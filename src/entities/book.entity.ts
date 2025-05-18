@@ -10,12 +10,14 @@ export class Book {
   title: string;
 
   @Column()
-  isbn: string;
+  yearPublished: number;
 
   @Column()
-  publicationYear: number;
+  numberCopies: number;
 
-  @ManyToOne(() => Author, (author) => author.books)
-  @JoinColumn({ name: 'authorId' })
+  @Column({ type: 'date' })
+  dateReleaseBooks: Date;
+
+  @ManyToOne(() => Author, (author) => author.books, { eager: true })
   author: Author;
 }
