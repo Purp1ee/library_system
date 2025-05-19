@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Book } from '../../entities/book.entity';
-import { Author } from '../../entities/author.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { Author } from 'src/authors/entities/author.entity';
+import { Book } from './entities/book.entity';
 
 @Injectable()
 export class BooksService {
