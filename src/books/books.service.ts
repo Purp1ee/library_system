@@ -32,44 +32,39 @@ export class BooksService {
   }
 
   async create(dto: CreateBookDto): Promise<Book> {
-    const author = await this.authorRepository.findOne({
-      where: { id: dto.authorId },
-    });
+  const author = await this.authorRepository.findOne({ where: { id: dto.authorId } });
+  if (!author) {
+    throw new NotFoundException('Автор не найден');
+  }
+
+  const book = this.bookRepository.create({
+    title: dto.title,
+    yearPublished: new Date(dto.yearPublished + '-01-01'),
+    numberCopies: dto.numberCopies,
+    dateReleaseBooks: new Date(dto.dateReleaseBooks),
+    author,
+  });
+
+  return this.bookRepository.save(book);
+}
+
+async update(id: number, dto: UpdateBookDto): Promise<Book> {
+  const book = await this.findOne(id);
+
+  if (dto.authorId !== undefined) {
+    const author = await this.authorRepository.findOne({ where: { id: dto.authorId } });
     if (!author) {
       throw new NotFoundException('Автор не найден');
     }
-
-    const book = this.bookRepository.create({
-      title: dto.title,
-      yearPublished: dto.yearPublished,
-      numberCopies: dto.numberCopies,
-      dateReleaseBooks: new Date(dto.dateReleaseBooks),
-      author,
-    });
-
-    return this.bookRepository.save(book);
+    book.author = author;
   }
 
-  async update(id: number, dto: UpdateBookDto): Promise<Book> {
-    const book = await this.findOne(id);
+  if (dto.title !== undefined) book.title = dto.title;
+  if (dto.yearPublished !== undefined) book.yearPublished = new Date(dto.yearPublished + '-01-01');
+  if (dto.numberCopies !== undefined) book.numberCopies = dto.numberCopies;
+  if (dto.dateReleaseBooks !== undefined) book.dateReleaseBooks = new Date(dto.dateReleaseBooks);
 
-    if (dto.authorId !== undefined) {
-      const author = await this.authorRepository.findOne({
-        where: { id: dto.authorId },
-      });
-      if (!author) {
-        throw new NotFoundException('Автор не найден');
-      }
-      book.author = author;
-    }
-
-    if (dto.title !== undefined) book.title = dto.title;
-    if (dto.yearPublished !== undefined) book.yearPublished = dto.yearPublished;
-    if (dto.numberCopies !== undefined) book.numberCopies = dto.numberCopies;
-    if (dto.dateReleaseBooks !== undefined)
-      book.dateReleaseBooks = new Date(dto.dateReleaseBooks);
-
-    return this.bookRepository.save(book);
+  return this.bookRepository.save(book);
   }
 
   async remove(id: number): Promise<void> {

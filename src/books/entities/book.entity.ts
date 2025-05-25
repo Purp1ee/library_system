@@ -13,8 +13,8 @@ export class Book {
   title: string;
 
   @ApiProperty({ description: 'Год публикации книги', minimum: 1800, maximum: new Date().getFullYear() })
-  @Column()
-  yearPublished: number;
+  @Column({ type: 'date' })
+  yearPublished: Date;
 
   @ApiProperty({ description: 'Количество экземпляров книги', minimum: 0 })
   @Column()
