@@ -13,16 +13,16 @@ export class Book {
   title: string;
 
   @ApiProperty({ description: 'Год публикации книги', minimum: 1800, maximum: new Date().getFullYear() })
-  @Column({ type: 'date' })
-  yearPublished: Date;
+  @Column({ type: 'date', nullable: true })
+  yearPublished: Date | null;
 
   @ApiProperty({ description: 'Количество экземпляров книги', minimum: 0 })
   @Column()
   numberCopies: number;
 
   @ApiProperty({ description: 'Дата выпуска книги', type: String, format: 'date' })
-  @Column({ type: 'date' })
-  dateReleaseBooks: Date;
+  @Column({ type: 'date', nullable: true })
+  dateReleaseBooks: Date | null;
 
   @ApiProperty({ description: 'Автор книги', type: () => Author })
   @ManyToOne(() => Author, (author) => author.books, { eager: true })

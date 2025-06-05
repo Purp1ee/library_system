@@ -10,7 +10,7 @@ export class CreateBookDto {
   @IsInt()
   @Min(1800)
   @Max(new Date().getFullYear())
-  yearPublished: string;
+  yearPublished: number;
 
   @ApiProperty({ description: 'Количество экземпляров книги', minimum: 0 })
   @IsInt()
