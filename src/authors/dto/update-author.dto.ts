@@ -5,10 +5,10 @@ export class UpdateAuthorDto {
   @ApiPropertyOptional({ description: 'Полное имя автора' })
   @IsOptional()
   @IsString()
-  fullName?: string;
+  name?: string; // Изменили с fullName на name
 
   @ApiPropertyOptional({ description: 'Дата рождения автора в формате ГГГГ-ММ-ДД' })
   @IsOptional()
   @IsDateString()
-  dateBirth?: string;
+  birthDate?: string; // Изменили с dateBirth на birthDate
 }

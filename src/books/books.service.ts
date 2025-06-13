@@ -1,10 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-
 import { Author } from 'src/authors/entities/author.entity';
 import { Book } from './entities/book.entity';
 
@@ -41,13 +39,9 @@ export class BooksService {
       throw new NotFoundException('Автор не найден');
     }
 
-    const yearPublishedDate = isValidYear(dto.yearPublished)
-      ? new Date(dto.yearPublished + '-01-01')
-      : null;
-
-    const releaseDate = dto.dateReleaseBooks && isValidDateString(dto.dateReleaseBooks)
-      ? new Date(dto.dateReleaseBooks)
-      : null;
+    // Улучшенная обработка дат с более детальными ошибками
+    const yearPublishedDate = this.parseYearPublished(dto.yearPublished);
+    const releaseDate = this.parseReleaseDate(dto.dateReleaseBooks);
 
     const book = this.bookRepository.create({
       title: dto.title,
@@ -71,53 +65,90 @@ export class BooksService {
       book.author = author;
     }
 
-    if (dto.title !== undefined) book.title = dto.title;
-
-    if (dto.yearPublished !== undefined) {
-      book.yearPublished = isValidYear(dto.yearPublished)
-        ? new Date(dto.yearPublished + '-01-01')
-        : null;
+    if (dto.title !== undefined) {
+      book.title = dto.title;
     }
 
-    if (dto.numberCopies !== undefined) book.numberCopies = dto.numberCopies;
+    if (dto.yearPublished !== undefined) {
+      book.yearPublished = this.parseYearPublished(dto.yearPublished);
+    }
+
+    if (dto.numberCopies !== undefined) {
+      book.numberCopies = dto.numberCopies;
+    }
 
     if (dto.dateReleaseBooks !== undefined) {
-      book.dateReleaseBooks = isValidDateString(dto.dateReleaseBooks)
-        ? new Date(dto.dateReleaseBooks)
-        : null;
+      book.dateReleaseBooks = this.parseReleaseDate(dto.dateReleaseBooks);
     }
 
     return this.bookRepository.save(book);
   }
 
   async remove(id: number): Promise<void> {
-    try {
-      await this.bookRepository.delete(id);
-    } catch (error) {
-      throw new BadRequestException('Невозможно удалить книгу');
+    const result = await this.bookRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Книга с id=${id} не найдена`);
     }
   }
+
+  // Вынесенные методы для обработки дат
+
+  private parseYearPublished(year: string | number | null | undefined): Date | null {
+    if (year === null || year === undefined || year === '') {
+      return null;
+    }
+
+    if (!isValidYear(year)) {
+      throw new BadRequestException(
+        `Неверный год публикации: ${year}. Год должен быть между 1800 и ${new Date().getFullYear()}`,
+      );
+    }
+
+    const yearNumber = typeof year === 'string' ? parseInt(year, 10) : year;
+    return new Date(`${yearNumber}-01-01`);
+  }
+
+  private parseReleaseDate(dateStr: string | null | undefined): Date | null {
+    if (dateStr === null || dateStr === undefined || dateStr === '') {
+      return null;
+    }
+
+    if (!isValidDateString(dateStr)) {
+      throw new BadRequestException(
+        `Неверный формат даты выпуска: ${dateStr}. Используйте формат YYYY-MM-DD`,
+      );
+    }
+
+    return new Date(dateStr);
+  }
 }
 
-/**
- * Проверка валидности года, принимает string или number
- */
+// Валидационные функции
+
 function isValidYear(year: any): boolean {
+  if (year === null || year === undefined) return false;
+  
+  const currentYear = new Date().getFullYear();
+  let yearNumber: number;
+
   if (typeof year === 'number') {
-    return year >= 1800 && year <= new Date().getFullYear();
+    yearNumber = year;
+  } else if (typeof year === 'string') {
+    yearNumber = parseInt(year, 10);
+    if (isNaN(yearNumber)) return false;
+  } else {
+    return false;
   }
-  if (typeof year === 'string') {
-    const num = parseInt(year, 10);
-    return !isNaN(num) && num >= 1800 && num <= new Date().getFullYear();
-  }
-  return false;
+
+  return yearNumber >= 1800 && yearNumber <= currentYear;
 }
 
-/**
- * Проверка что строка валидная дата ISO-формата
- */
 function isValidDateString(dateStr: any): boolean {
-  if (typeof dateStr !== 'string') return false;
-  const timestamp = Date.parse(dateStr);
-  return !isNaN(timestamp);
+  if (typeof dateStr !== 'string' || dateStr.trim() === '') return false;
+  
+  // Проверяем формат YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateStr;
 }

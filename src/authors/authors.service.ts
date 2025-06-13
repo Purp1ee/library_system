@@ -29,20 +29,20 @@ export class AuthorsService {
 
   async create(dto: CreateAuthorDto): Promise<Author> {
     const author = new Author();
-    author.name = dto.fullName;
-    author.birthDate = dto.dateBirth ? new Date(dto.dateBirth) : undefined;
+    author.name = dto.name; // Теперь просто присваиваем без преобразования имен
+    author.birthDate = dto.birthDate ? new Date(dto.birthDate) : undefined;
     
     return this.authorRepository.save(author);
   }
 
   async update(id: number, dto: UpdateAuthorDto): Promise<Author> {
-    const author = await this.findOne(id); // выбрасывает NotFoundException если нет
+    const author = await this.findOne(id);
 
-    if (dto.fullName !== undefined) {
-      author.name = dto.fullName;
+    if (dto.name !== undefined) {
+      author.name = dto.name;
     }
-    if (dto.dateBirth !== undefined) {
-      author.birthDate = new Date(dto.dateBirth);
+    if (dto.birthDate !== undefined) {
+      author.birthDate = new Date(dto.birthDate);
     }
 
     return this.authorRepository.save(author);

@@ -4,10 +4,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateAuthorDto {
   @ApiProperty({ description: 'Полное имя автора' })
   @IsString()
-  fullName: string;
+  name: string; // Изменили с fullName на name
 
   @ApiPropertyOptional({ description: 'Дата рождения автора в формате ГГГГ-ММ-ДД' })
   @IsOptional()
   @IsDateString()
-  dateBirth?: string;
+  birthDate?: string; // Изменили с dateBirth на birthDate
 }
